@@ -1,0 +1,53 @@
+<mat-card>
+
+  <form [formGroup]="form">
+    <mat-form-field class="date-control" appearance="fill">
+      <mat-label>Choose a date</mat-label>
+      <input matInput [max]="maxDate" formControlName="date" [matDatepicker]="picker">
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+      <mat-error *ngIf="dateControl?.hasError('required')">
+        Date is invalid or empty
+      </mat-error>
+      <mat-error *ngIf="dateControl?.hasError('futureDate')">
+        Date can't be in future
+      </mat-error>
+    </mat-form-field>
+
+    <div class="currency-container">
+
+      <mat-form-field appearance="fill">
+        <mat-label>Currency</mat-label>
+        <mat-select formControlName="currency">
+          <mat-option *ngFor="let currency of currencies$ | async" [value]="currency.cc">
+            {{ currency.txt }} ({{ currency.cc }})
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Amount</mat-label>
+        <input matInput formControlName="amount" type="number">
+      </mat-form-field>
+    </div>
+
+    <div class="currency-container">
+      <mat-form-field appearance="fill">
+        <mat-label>Target currency</mat-label>
+        <mat-select formControlName="targetCurrency">
+          <mat-option *ngFor="let currency of currencies$ | async" [value]="currency.cc">
+            {{ currency.txt }} ({{ currency.cc }})
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Amount</mat-label>
+        <input matInput formControlName="targetAmount" type="number">
+      </mat-form-field>
+    </div>
+  </form>
+
+  <app-loader *ngIf="loading$ | async"></app-loader>
+
+</mat-card>

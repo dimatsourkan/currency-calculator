@@ -1,0 +1,11 @@
+.date-control {
+  width: 100%;
+}
+
+.currency-container {
+  display: flex;
+
+  mat-form-field {
+    flex: 1;
+  }
+}

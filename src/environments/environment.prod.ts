@@ -1,3 +1,5 @@
 export const environment = {
-  production: true
+  currencyApi: "https://bank.gov.ua/NBUStatService/v1/statdirectory",
+  production: true,
+  apiUrl: ""
 };

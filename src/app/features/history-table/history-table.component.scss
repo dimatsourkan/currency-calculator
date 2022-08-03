@@ -1,0 +1,10 @@
+mat-card {
+  padding: 0;
+  overflow: hidden;
+
+  mat-row {
+    &:last-of-type {
+      border-bottom: none;
+    }
+  }
+}

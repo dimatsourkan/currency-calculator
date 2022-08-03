@@ -1,0 +1,12 @@
+.page-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  main {
+    flex: 1 1 100%;
+    padding: 15px;
+    overflow: auto;
+    position: relative;
+  }
+}
