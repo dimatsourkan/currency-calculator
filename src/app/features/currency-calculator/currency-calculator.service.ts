@@ -1,24 +1,36 @@
-import { Injectable } from "@angular/core";
+import {
+  Injectable,
+  OnDestroy,
+} from "@angular/core";
 import {
   combineLatest,
   debounceTime,
   filter,
   Observable,
   startWith,
+  Subject,
   switchMap,
+  takeUntil,
 } from "rxjs";
 import { HistoryClient } from "../../../../projects/http-clients/src/lib/clients/index";
 import { CurrencyCalculatorFormService } from "./currency-calculator-form.service";
 import { CurrencyCalculatorStateService } from "./currency-calculator-state.service";
 
 @Injectable()
-export class CurrencyCalculatorService {
+export class CurrencyCalculatorService implements OnDestroy {
+
+  private destroy = new Subject();
 
   constructor(
     private ccFormService: CurrencyCalculatorFormService,
     private ccStateService: CurrencyCalculatorStateService,
     private historyClient: HistoryClient,
   ) {
+  }
+
+  public ngOnDestroy(): void {
+    this.destroy.next(null);
+    this.destroy.complete();
   }
 
   public initCalculator(): void {
@@ -41,17 +53,24 @@ export class CurrencyCalculatorService {
       this.ccFormService.amountControl?.valueChanges.pipe(startWith(0)),
       this.ccFormService.currencyControl?.valueChanges.pipe(startWith(0)),
       this.ccFormService.targetCurrencyControl?.valueChanges.pipe(startWith(0)),
-    ]).subscribe(() => this.calculateOnMainChanges());
+    ])
+      .pipe(takeUntil(this.destroy))
+      .subscribe(() => this.calculateOnMainChanges());
 
     this.ccFormService.targetAmountControl?.valueChanges
+      .pipe(takeUntil(this.destroy))
       .subscribe(() => this.calculateOnTargetChanges());
 
     this.ccFormService.dateControl?.valueChanges
-      .pipe(switchMap(() => this.loadCurrencies()))
+      .pipe(
+        takeUntil(this.destroy),
+        switchMap(() => this.loadCurrencies())
+      )
       .subscribe(() => this.calculateOnMainChanges());
 
     this.ccFormService.form?.valueChanges
       .pipe(
+        takeUntil(this.destroy),
         debounceTime(500),
         filter(() => this.ccFormService.form.valid),
         switchMap((val) => this.historyClient.add(val)),
