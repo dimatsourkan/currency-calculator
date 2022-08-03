@@ -2,6 +2,7 @@ import {
   Injectable,
   OnDestroy,
 } from "@angular/core";
+import { HistoryClient } from "@http-clients";
 import {
   combineLatest,
   debounceTime,
@@ -12,7 +13,6 @@ import {
   switchMap,
   takeUntil,
 } from "rxjs";
-import { HistoryClient } from "../../../../projects/http-clients/src/lib/clients/index";
 import { CurrencyCalculatorFormService } from "./currency-calculator-form.service";
 import { CurrencyCalculatorStateService } from "./currency-calculator-state.service";
 
@@ -35,7 +35,17 @@ export class CurrencyCalculatorService implements OnDestroy {
 
   public initCalculator(): void {
     this.listenValueChanges();
-    this.loadCurrencies().subscribe();
+    this.loadCurrencies()
+      .pipe(takeUntil(this.destroy))
+      .subscribe();
+  }
+
+  private get amount(): number | null {
+    return this.ccFormService.amountControl?.value;
+  }
+
+  private get targetAmount(): number | null {
+    return this.ccFormService.targetAmountControl?.value;
   }
 
   private get rate(): number | null {
@@ -64,7 +74,7 @@ export class CurrencyCalculatorService implements OnDestroy {
     this.ccFormService.dateControl?.valueChanges
       .pipe(
         takeUntil(this.destroy),
-        switchMap(() => this.loadCurrencies())
+        switchMap(() => this.loadCurrencies()),
       )
       .subscribe(() => this.calculateOnMainChanges());
 
@@ -100,43 +110,35 @@ export class CurrencyCalculatorService implements OnDestroy {
   }
 
   private patchAmount(): void {
-    const amount = this.calculateAmount();
+    const amount = this.calculateCurrency(this.targetAmount, this.targetRate, this.rate);
     this.ccFormService.amountControl?.patchValue(amount, {
       emitEvent: false,
     });
   }
 
   private patchTargetAmount(): void {
-    const amount = this.calculateTargetAmount();
+    const amount = this.calculateCurrency(this.amount, this.rate, this.targetRate);
     this.ccFormService.targetAmountControl?.patchValue(amount, {
-        emitEvent: false,
-      });
-  }
-
-  private calculateAmount(): number | null {
-    const targetAmount = this.ccFormService.targetAmountControl?.value;
-    const rate = this.rate;
-    const targetRate = this.targetRate;
-
-    return rate && targetAmount && targetRate
-      ? this.toFixed(targetRate * targetAmount / rate, 3)
-      : null;
-  }
-
-  private calculateTargetAmount(): number | null {
-    const rate = this.rate;
-    const targetRate = this.targetRate;
-    const amount = this.ccFormService.amountControl?.value;
-
-    return rate && amount && targetRate
-      ? this.toFixed(rate * amount / targetRate, 3)
-      : null;
+      emitEvent: false,
+    });
   }
 
   private loadCurrencies(): Observable<any> {
     const date = this.ccFormService.dateControl?.value;
     return this.ccStateService
       .loadCurrenciesByDate(date);
+  }
+
+  //TODO - This method can be moved to clear function
+  private calculateCurrency(
+    amount: number | null,
+    rate: number | null,
+    targetRate: number | null,
+  ) {
+    const canBeCalculated = rate && amount && targetRate;
+    return canBeCalculated
+      ? this.toFixed(rate * amount / targetRate, 3)
+      : null;
   }
 
   //TODO - This method can be moved to clear function

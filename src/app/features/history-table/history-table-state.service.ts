@@ -1,12 +1,14 @@
 import { Injectable } from "@angular/core";
 import {
+  HistoryClient,
+  HistoryModel,
+} from "@http-clients";
+import {
   BehaviorSubject,
   finalize,
   Observable,
   tap,
 } from "rxjs";
-import { HistoryClient } from "../../../../projects/http-clients/src/lib/clients/index";
-import { HistoryModel } from "../../../../projects/http-clients/src/lib/models/history.model";
 
 @Injectable()
 export class HistoryTableStateService {

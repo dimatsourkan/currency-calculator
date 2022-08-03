@@ -1,5 +1,9 @@
 import { Injectable } from "@angular/core";
 import {
+  CurrencyClient,
+  CurrencyModel,
+} from "@http-clients";
+import {
   BehaviorSubject,
   finalize,
   Observable,
@@ -7,8 +11,6 @@ import {
   take,
   tap,
 } from "rxjs";
-import { CurrencyClient } from "../../../../projects/http-clients/src/lib/clients/index";
-import { CurrencyModel } from "../../../../projects/http-clients/src/lib/models/index";
 
 @Injectable()
 export class CurrencyCalculatorStateService {
